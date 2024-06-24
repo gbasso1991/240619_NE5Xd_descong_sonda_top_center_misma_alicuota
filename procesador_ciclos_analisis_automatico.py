@@ -715,7 +715,7 @@ ascii.write(ciclo_out,output_file,names=encabezado,overwrite=True,delimiter='\t'
 
 
 #%% PLOTEO TODOS LOS CICLOS FILTRADOS IMPAR
-cmap = mpl.colormaps['jet']
+cmap = mpl.colormaps['turbo']
 # norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
 
 if Analisis_de_Fourier==1:
@@ -723,10 +723,11 @@ if Analisis_de_Fourier==1:
     ax = fig.add_subplot(1,1,1)
     for i in range(0,len(fnames_m)):
             color = cmap(norm(temp_m[i]))
-            plt.plot(Ciclos_eje_H[i]/1000,Ciclos_eje_M_filt[i],'-',color=color)
+            plt.plot(Ciclos_eje_H[i]/1000,Ciclos_eje_M_filt[i],'-',color=color,label=f'{fnames_m[i].split("_")[-1][-7:-4]}  {temp_m[i]} °C')
+
 
     plt.plot(Ciclo_descancelacion_H/1000,Ciclo_descancelacion_M_filt,'-',color='k',label='Descancelación')
-    plt.plot(H_prom/1000,M_prom,'.-',label=f'Ciclo promedio ({Num_ciclos_m} ciclos)')
+    #plt.plot(H_prom/1000,M_prom,'.-',label=f'Ciclo promedio ({Num_ciclos_m} ciclos)')
 plt.legend(loc='lower right',fancybox=True)
 
 # Configurar la barra de colores
@@ -734,7 +735,7 @@ sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
 plt.colorbar(sm, label='Temperatura', ax=ax)  # Agrega una etiqueta adecuada
 
-plt.text(0.15,0.75,f'{frec_nombre[0]/1000:>3.0f} kHz\n{round(np.mean(Campo_maximo)/1e3):>4.1f} kA/m',fontsize=20,bbox=dict(color='tab:orange',alpha=0.7),transform=ax.transAxes)
+plt.text(0.10,0.80,f'{frec_nombre[0]/1000:>3.0f} kHz\n{round(np.mean(Campo_maximo)/1e3):>4.1f} kA/m',fontsize=20,bbox=dict(color='tab:orange',alpha=0.7),transform=ax.transAxes)
 plt.grid()
 plt.xlabel('H (kA/m)',fontsize=15)
 plt.ylabel('M (A/m)',fontsize=15)
@@ -761,7 +762,6 @@ else:
     col1= np.zeros_like(fnames_m)
 
 col0 = fnames_m
-
 col2 = temp_m
 col3 = Remanencia_Am
 col4 = Coercitividad_kAm
@@ -906,33 +906,36 @@ print(f'Tiempo de ejecución del script: {(end_time-start_time):6.3f} s.')
 
 #%% resto fondo01 al ultimo ciclo y comparo
 
-# h_fdo= Ciclo_descancelacion_H[:].copy()/1000
-# m_fdo= Ciclo_descancelacion_M_filt[:].copy()
+h_fdo= Ciclo_descancelacion_H[:].copy()/1000
+m_fdo= Ciclo_descancelacion_M_filt[:].copy()
 
-# h_i=Ciclos_eje_H[-1].copy()/1000
-# m_i=Ciclos_eje_M_filt[-1].copy()
+h_0=Ciclos_eje_H[0].copy()/1000
+m_0=Ciclos_eje_M_filt[0].copy()
 
-
-# def lineal(x,m,n):
-#     return m*x+n
-# (M,N),_=curve_fit(lineal,h_fdo,m_fdo)
-# y= lineal(h_fdo,M,N)
+h_i=Ciclos_eje_H[-1].copy()/1000
+m_i=Ciclos_eje_M_filt[-1].copy()
 
 
-# h_s_recta=h_i
-# m_s_recta=m_i-lineal(h_i,M,N)
-# m_s_fdo=m_i-m_fdo
+def lineal(x,m,n):
+    return m*x+n
+(M,N),_=curve_fit(lineal,h_fdo,m_fdo)
+y= lineal(h_fdo,M,N)
 
-# fig,ax=plt.subplots(figsize=(9,7),constrained_layout=True)
 
-# ax.plot(h_i,m_i,label='Ultimo ciclo')
-# ax.plot(h_fdo,m_fdo,label='Descancelacion')
-# ax.plot(h_s_recta,m_s_recta,label='s/ recta')
-# ax.plot(h_i,m_s_fdo,label='s/ descancelacion')
-# # ax.plot(h_f,m_f)
+h_s_recta=h_i
+m_s_recta=m_i-lineal(h_i,M,N)
+m_s_fdo=m_i-m_fdo
 
-# plt.grid()
-# plt.legend()
-# plt.xlabel('H (kA/m)',fontsize=15)
-# plt.ylabel('M (A/m)',fontsize=15)
-# # plt.savefig('testeo_restas_3.png',dpi=300,facecolor='w')
+fig,ax=plt.subplots(figsize=(9,7),constrained_layout=True)
+ax.plot(h_0,m_0,label=f'Primer ciclo - Ms={max(m_0):.1f} A/m')
+ax.plot(h_i,m_i,label='Ultimo ciclo')
+ax.plot(h_fdo,m_fdo,'k',label='Descancelacion')
+ax.plot(h_s_recta,m_s_recta,label=f's/ recta - Ms={max(m_s_recta):.1f} A/m')
+ax.plot(h_i,m_s_fdo,label=f's/ desc - Ms={max(m_s_fdo):.1f} A/m')
+# ax.plot(h_f,m_f)
+
+plt.grid()
+plt.legend()
+plt.xlabel('H (kA/m)',fontsize=15)
+plt.ylabel('M (A/m)',fontsize=15)
+plt.savefig(os.path.join(output_dir,os.path.commonprefix(list(fnames_m))+'_ciclos_s_descancelacion.png'),dpi=300,facecolor='w')

@@ -210,7 +210,6 @@ plt.ylabel(r'$\tau$ (s)')
 plt.xlabel('T (°C)')
 plt.title(r'$\tau$ - '+ identif_1)
 plt.savefig('tau_vs_T_'+identif_1+'.png',dpi=300)
-
 plt.show()
 
 archivos_ciclos_1 = [f for f in os.listdir(dir_1) if  fnmatch.fnmatch(f, '*promedio*')]
@@ -233,6 +232,68 @@ ax1.grid()
 plt.title('Ciclos promedio - '+identif_1)
 plt.savefig('ciclos_promedio_'+identif_1+'.png',dpi=300)
 plt.show()
+
+
+
+#%% Ploteo parametros 
+
+fig,((ax0,ax1,ax2),(ax3,ax4,ax5),(ax6,ax7,ax8))= plt.subplots(ncols=3,nrows=3,figsize=(15,10),constrained_layout=True,sharex='col',sharey='row')
+
+ax0.plot(temperatura_1,np.sin(dphi_fem_1),'.-',color='tab:blue',label='1')
+ax1.plot(temperatura_2,np.sin(dphi_fem_2),'.-',color='tab:orange',label='2')
+ax2.plot(temperatura_3,np.sin(dphi_fem_3),'.-',color='tab:green',label='3')
+
+ax3.plot(temperatura_1,magnitud_fund_1,'.-',color='tab:blue',label='1')
+ax4.plot(temperatura_2,magnitud_fund_2,'.-',color='tab:orange',label='2')
+ax5.plot(temperatura_3,magnitud_fund_3,'.-',color='tab:green',label='3')
+
+ax6.plot(temperatura_1,SAR_1_1,'.-',color='tab:blue',label='1')
+ax7.plot(temperatura_2,SAR_1_2,'.-',color='tab:orange',label='2')
+ax8.plot(temperatura_3,SAR_1_3,'.-',color='tab:green',label='3')
+
+ax0.set_ylabel('$\sin \Delta \phi$')
+ax0.set_title('$\sin (\Delta \phi)$',loc='left')
+ax3.set_ylabel('|c$_0$|')
+ax3.set_title('Magnitud 1° armónico',loc='left')
+ax6.set_title('SAR',loc='left')
+ax6.set_ylabel('SAR (W/g)')
+
+for a in [ax0,ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8]:
+    a.set_xlim(-5,5)
+    a.grid()
+    a.legend()
+
+for a in [ax6,ax7,ax8]:
+    a.set_xlabel('T (°C)')
+
+plt.suptitle('NE@citrico - 135 kHz - 38 kA/m',fontsize=16)
+plt.savefig('sinphi_mag_SAR_vs_T_'+identif_1+'.png',dpi=300)
+
+plt.show()
+
+#%% Obtengo ciclos representativos
+#primero los del pico en la transicion de fase
+print('max tau en TF:')
+indx_max_1= np.nonzero(tau_1_1==max(tau_1_1))[0][0]
+print(indx_max_1,files_1[indx_max_1],temperatura_1[indx_max_1])
+
+indx_max_2= np.nonzero(tau_1_2==max(tau_1_2))[0][0]
+print(indx_max_2,files_2[indx_max_2],temperatura_2[indx_max_2])
+
+indx_max_3= np.nonzero(tau_1_3==max(tau_1_3))[0][0]
+print(indx_max_3,files_3[indx_max_3],temperatura_3[indx_max_3])
+
+
+
+
+
+
+
+
+
+
+
+
 
 #%% 135 15 
 # identif_2='135_150'
